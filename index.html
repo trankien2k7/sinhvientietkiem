@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Tài Chính Chuẩn Lịch Vạn Niên 360° - Firebase & AI Deep Scan</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <style>
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #0f172a;
+            border-radius: 10px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        .tab-active {
+            background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%) !important;
+            color: white !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .loading {
+            border-top-color: #3b82f6;
+            animation: spinner 1s linear infinite;
+        }
+
+        @keyframes spinner {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Seasonal Animations */
+        @keyframes float-up {
+            0% {
+                transform: translateY(110vh) rotate(0deg) scale(0.8);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.6;
+            }
+
+            90% {
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: translateY(-10vh) rotate(360deg) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        @keyframes float-down {
+            0% {
+                transform: translateY(-10vh) rotate(0deg) scale(0.8);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.6;
+            }
+
+            90% {
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: translateY(110vh) rotate(360deg) scale(1.2);
+                opacity: 0;
+            }
+        }
+
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 0;
+            user-select: none;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.2));
+        }
+
+        .season-spring {
+            background: linear-gradient(135deg, #022c22 0%, #0f172a 50%, #4c0519 100%);
+        }
+
+        .season-summer {
+            background: linear-gradient(135deg, #083344 0%, #0f172a 50%, #172554 100%);
+        }
+
+        .season-autumn {
+            background: linear-gradient(135deg, #431407 0%, #0f172a 50%, #451a03 100%);
+        }
+
+        .season-winter {
+            background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e1b4b 100%);
+        }
+
+        /* LIGHT THEME OVERRIDES */
+        .light-theme.season-spring {
+            background: linear-gradient(135deg, #dcfce7 0%, #f1f5f9 50%, #ffe4e6 100%);
+        }
+
+        .light-theme.season-summer {
+            background: linear-gradient(135deg, #cffafe 0%, #f1f5f9 50%, #dbeafe 100%);
+        }
+
+        .light-theme.season-autumn {
+            background: linear-gradient(135deg, #ffedd5 0%, #f1f5f9 50%, #fef3c7 100%);
+        }
+
+        .light-theme.season-winter {
+            background: linear-gradient(135deg, #f1f5f9 0%, #bae6fd 50%, #e0e7ff 100%);
+        }
+
+        .light-theme .bg-slate-900\/40,
+        .light-theme .bg-slate-900\/60 {
+            background-color: rgba(255, 255, 255, 0.75) !important;
+            border-color: rgba(203, 213, 225, 0.6) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .light-theme .bg-slate-950,
+        .light-theme .bg-slate-900 {
+            background-color: #ffffff !important;
+            border-color: #e2e8f0 !important;
+            color: #0f172a !important;
+        }
+
+        .light-theme .bg-slate-950\/80,
+        .light-theme .bg-slate-950\/50,
+        .light-theme .bg-slate-950\/60,
+        .light-theme .bg-slate-950\/20 {
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            border-color: #cbd5e1 !important;
+            color: #0f172a !important;
+        }
+
+        .light-theme .bg-slate-800 {
+            background-color: #f1f5f9 !important;
+            border-color: #cbd5e1 !important;
+            color: #334155 !important;
+        }
+
+        .light-theme .bg-amber-950\/20 {
+            background-color: rgba(245, 158, 11, 0.1) !important;
+            border-color: rgba(245, 158, 11, 0.4) !important;
+        }
+
+        .light-theme .text-slate-100 {
+            color: #0f172a !important;
+        }
+
+        .light-theme .text-slate-200 {
+            color: #1e293b !important;
+        }
+
+        .light-theme .text-slate-300 {
+            color: #334155 !important;
+        }
+
+        .light-theme .text-slate-400 {
+            color: #475569 !important;
+            font-weight: 700 !important;
+        }
+
+        .light-theme .text-slate-500 {
+            color: #64748b !important;
+        }
+
+        .light-theme .border-slate-800,
+        .light-theme .border-slate-800\/80,
+        .light-theme .border-slate-800\/60,
+        .light-theme .border-slate-900 {
+            border-color: #cbd5e1 !important;
+        }
+
+        .light-theme .hover\:bg-slate-800:hover {
+            background-color: #e2e8f0 !important;
+            color: #0f172a !important;
+        }
+
+        .light-theme .hover\:text-slate-200:hover {
+            color: #0f172a !important;
+        }
+
+        .light-theme input,
+        .light-theme textarea,
+        .light-theme select {
+            background-color: #f8fafc !important;
+            color: #0f172a !important;
+            border-color: #cbd5e1 !important;
+        }
+
+        .light-theme input:focus,
+        .light-theme textarea:focus,
+        .light-theme select:focus {
+            border-color: #3b82f6 !important;
+        }
+
+        .light-theme input::placeholder,
+        .light-theme textarea::placeholder {
+            color: #94a3b8 !important;
+            font-weight: 500 !important;
+        }
+
+        .light-theme button.bg-gradient-to-r,
+        .light-theme .bg-gradient-to-br {
+            color: #ffffff !important;
+        }
+
+        .light-theme .bg-gradient-to-br i {
+            color: #ffffff !important;
+        }
+    </style>
+</head>
+
+<body id="mainBody"
+    class="bg-slate-950 text-slate-100 font-sans selection:bg-blue-500/30 transition-colors duration-1000 overflow-x-hidden">
+    <div id="seasonalOverlay" class="fixed inset-0 pointer-events-none z-0 opacity-50"></div>
+    <div class="relative z-10 flex flex-col min-h-screen">
+
+        <nav
+            class="bg-slate-900/60 backdrop-blur-xl border-b border-slate-800 px-6 py-4 flex flex-col xl:flex-row justify-between items-center gap-4 sticky top-0 z-50">
+            <div class="flex items-center gap-3 w-full xl:w-auto">
+                <div
+                    class="bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5 rounded-xl text-white shadow-lg shadow-blue-500/20 ring-1 ring-blue-400/30">
+                    <i class="fa-solid fa-wallet text-xl"></i>
+                </div>
+                <div>
+                    <h1
+                        class="text-xl font-black tracking-wider bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent flex items-center">
+                        STUDENT BUDGET 360 <span id="seasonTitleBadge" class="hidden sm:inline-block ml-3"></span>
+                    </h1>
+                    <p class="text-xs text-slate-400 font-medium">Trợ lý AI quét sâu nhật ký & Đề xuất giải pháp tối ưu
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-end gap-4 w-full xl:w-auto">
+                <div
+                    class="bg-slate-950/80 border border-slate-800 rounded-xl px-5 py-2 flex items-center gap-3 min-w-[200px] shadow-lg ring-1 ring-slate-800">
+                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                    <div>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider" id="balanceTopLabel">Số
+                            Dư Tổng Tháng</p>
+                        <p id="topNavRemaining" class="text-base font-black text-emerald-400 tracking-wide">0 ₫</p>
+                    </div>
+                </div>
+
+                <div class="relative w-full sm:w-48 flex items-center">
+                    <span class="absolute left-3 text-slate-500 text-xs"><i class="fa-solid fa-key"></i></span>
+                    <input type="password" id="apiKeyInput"
+                        class="w-full bg-slate-900 border border-slate-800 rounded-xl py-2 pl-8 pr-3 text-xs text-slate-200 focus:border-blue-500 focus:outline-none transition-all"
+                        placeholder="Gemini Key...">
+                </div>
+
+                <button id="themeToggleBtn"
+                    class="bg-slate-950/80 border border-slate-800 w-10 h-10 flex items-center justify-center rounded-xl shadow-lg cursor-pointer transition-transform hover:scale-110 active:scale-95"
+                    title="Sáng/Tối">
+                    <i class="fa-solid fa-sun text-lg text-amber-400"></i>
+                </button>
+
+                <div id="authSection" class="flex items-center gap-2">
+                    <button id="showLoginBtn"
+                        class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 text-white text-xs font-bold py-2 px-4 rounded-xl shadow-md transition-all cursor-pointer">
+                        <i class="fa-solid fa-right-to-bracket mr-1"></i> Đăng Nhập / Đăng Ký
+                    </button>
+                    <div id="userInfoContainer"
+                        class="hidden flex items-center gap-3 bg-slate-900 border border-slate-800 rounded-xl py-1.5 pl-3 pr-2">
+                        <div class="text-right">
+                            <p id="userEmailText" class="text-xs font-bold text-slate-300 max-w-[120px] truncate">
+                                user@gmail.com</p>
+                            <p class="text-[9px] text-emerald-400 font-medium"><i class="fa-solid fa-cloud-done"></i> Đã
+                                đồng bộ</p>
+                        </div>
+                        <button id="logoutBtn"
+                            class="bg-slate-800 hover:bg-rose-950/40 hover:text-rose-400 border border-slate-700 p-2 rounded-lg text-xs text-slate-400 transition-all cursor-pointer"
+                            title="Đăng xuất">
+                            <i class="fa-solid fa-power-off"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="flex-1 max-w-[1700px] w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <div class="lg:col-span-6 flex flex-col gap-5">
+                <div class="bg-slate-900/40 border border-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-xl">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-xs font-bold text-slate-400 tracking-wider uppercase flex items-center">
+                            <i class="fa-solid fa-calendar mr-2 text-indigo-400 text-sm"></i> Chọn Thời Gian
+                        </h3>
+                        <select id="yearSelect"
+                            class="bg-slate-950 border border-slate-800 text-slate-300 rounded-xl py-1 px-3 text-xs font-bold focus:border-blue-500 focus:outline-none cursor-pointer"></select>
+                    </div>
+                    <div class="grid grid-cols-4 gap-2" id="monthsGrid"></div>
+                </div>
+
+                <div
+                    class="bg-slate-900/40 border border-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-xl flex-1 flex flex-col min-h-[380px]">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-3">
+                        <h3 class="text-xs font-bold text-slate-400 tracking-wider uppercase flex items-center">
+                            <i class="fa-solid fa-network-wired mr-2 text-emerald-400 text-sm"></i> Thứ cố định - Ngày
+                            thay đổi theo Tuần
+                        </h3>
+                        <span
+                            class="text-[10px] bg-slate-800 border border-slate-700/50 px-2.5 py-0.5 rounded-md text-slate-300 font-semibold"
+                            id="timePath">Đang tải...</span>
+                    </div>
+
+                    <div class="grid grid-cols-12 gap-4 flex-1">
+                        <div class="col-span-3 flex flex-col gap-2 border-r border-slate-800/80 pr-2 custom-scroll overflow-y-auto"
+                            id="weeksList"></div>
+                        <div class="col-span-9 flex flex-col justify-between">
+                            <div>
+                                <div class="grid grid-cols-7 gap-1 text-center mb-2">
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase py-1">T2</div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase py-1">T3</div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase py-1">T4</div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase py-1">T5</div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase py-1">T6</div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase py-1">T7</div>
+                                    <div class="text-[10px] font-bold text-rose-400 uppercase py-1">CN</div>
+                                </div>
+                                <div class="grid grid-cols-7 gap-1.5" id="daysGrid"></div>
+                            </div>
+
+                            <div id="weekSummaryBox"
+                                class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3 mt-4 space-y-1 hidden">
+                                <p class="text-[10px] uppercase tracking-wider text-indigo-400 font-bold"
+                                    id="weekSummaryTitle">Tổng Kết Tuần</p>
+                                <div class="flex justify-between items-center text-xs pt-1 border-t border-slate-900">
+                                    <span class="text-slate-400 font-medium">Thu nhập ròng tuần:</span>
+                                    <span id="weekNetText" class="text-emerald-400 font-black text-sm tracking-wide">0
+                                        ₫</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/40 border border-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-xl">
+                    <div class="grid grid-cols-2 gap-4 h-28">
+                        <div
+                            class="bg-slate-950/50 p-2 rounded-xl border border-slate-800/60 flex items-center justify-center">
+                            <canvas id="columnChart"></canvas>
+                        </div>
+                        <div
+                            class="bg-slate-950/50 p-2 rounded-xl border border-slate-800/60 flex items-center justify-center">
+                            <canvas id="lineChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="lg:col-span-3 bg-slate-900/40 border border-slate-800/80 backdrop-blur-md rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+                <div class="space-y-5">
+                    <div id="monthInputSection" class="border-b border-slate-800 pb-4 transition-all duration-200">
+                        <span
+                            class="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-md border border-indigo-500/20 tracking-wide inline-block mb-2"
+                            id="monthBadge">Cố định</span>
+                        <h2 class="text-base font-extrabold text-slate-100 tracking-wide mb-3">Khoản Cố Định Tháng</h2>
+                        <div class="space-y-3">
+                            <div>
+                                <label
+                                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Lương
+                                    cứng / Trợ cấp (ví dụ: 4m, 500k)</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2 text-slate-500 text-xs">₫</span>
+                                    <input type="text" id="monthlyIncome"
+                                        class="w-full bg-slate-900 border border-slate-800 rounded-xl py-1.5 pl-7 pr-3 text-xs text-slate-100 focus:border-blue-500 focus:outline-none"
+                                        placeholder="Ví dụ: 4m">
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tiền
+                                    trọ & Điện nước (ví dụ: 1.8m)</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2 text-slate-500 text-xs">₫</span>
+                                    <input type="text" id="monthlyFixedExpense"
+                                        class="w-full bg-slate-900 border border-slate-800 rounded-xl py-1.5 pl-7 pr-3 text-xs text-slate-100 focus:border-blue-500 focus:outline-none"
+                                        placeholder="Ví dụ: 1.8m">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="dayInputSection" class="opacity-30 pointer-events-none transition-all duration-300">
+                        <span
+                            class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/20 tracking-wide inline-block mb-2"
+                            id="dayBadge">Chưa chọn ngày</span>
+                        <h2 class="text-base font-extrabold text-slate-100 tracking-wide mb-1">Nhật Ký Trong Ngày</h2>
+                        <p class="text-[11px] text-slate-400 mb-3">Hệ thống lưu Cloud tự động khi gõ:</p>
+                        <textarea id="dayLogs" rows="5"
+                            class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:border-emerald-500 focus:outline-none resize-none placeholder:text-slate-600"
+                            placeholder="Ví dụ:&#10;+200k làm thêm&#10;-50k ăn vặt tiêu linh tinh"></textarea>
+                    </div>
+                </div>
+                <div class="mt-6 flex flex-col gap-3">
+                    <button id="analyzeBtn"
+                        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 text-white text-sm font-bold py-3 px-4 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2 cursor-pointer border border-indigo-400/20">
+                        <i class="fa-solid fa-brain"></i> Nhận xét mốc hiện tại
+                    </button>
+                    <button id="analyzeYearBtn"
+                        class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 text-white text-sm font-bold py-3 px-4 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2 cursor-pointer border border-pink-400/20">
+                        <i class="fa-solid fa-calendar-check"></i> Đánh giá Toàn Bộ Năm
+                    </button>
+                </div>
+            </div>
+
+            <div
+                class="lg:col-span-3 bg-slate-900/40 border border-slate-800/80 backdrop-blur-md rounded-2xl p-5 shadow-xl flex flex-col min-h-[450px]">
+                <h2
+                    class="text-xs font-bold text-slate-400 tracking-wider uppercase border-b border-slate-800 pb-3 mb-4 flex items-center">
+                    <i class="fa-solid fa-wand-magic-sparkles text-amber-400 mr-2 text-sm"></i> Báo Cáo Tài Chính
+                </h2>
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-inner space-y-2 mb-4">
+                    <div class="grid grid-cols-2 gap-y-2 text-xs">
+                        <span class="text-slate-400">Tổng Thu Mốc Chọn:</span> <span id="statTotalIncome"
+                            class="font-bold text-right text-emerald-400">0 ₫</span>
+                        <span class="text-slate-400">Tổng Chi Mốc Chọn:</span> <span id="statTotalExpense"
+                            class="font-bold text-right text-rose-400">0 ₫</span>
+                        <div class="col-span-2 border-t border-slate-800/60 my-1"></div>
+                        <span class="text-slate-400 font-bold">Số Dư Còn Lại:</span> <span id="statRemaining"
+                            class="font-black text-right text-sm text-blue-400">0 ₫</span>
+                    </div>
+                </div>
+                <div id="placeholderText" class="text-center my-auto px-4 py-4">
+                    <p class="text-slate-500 text-xs italic">Nhập dữ liệu dòng tiền và ấn nút để nhận phân tích chi tiết
+                        từ AI dựa trên nhật ký của bạn.</p>
+                </div>
+                <div id="loadingStatus" class="hidden text-center my-auto py-4">
+                    <div
+                        class="loading ease-linear rounded-full border-2 border-slate-800 h-8 w-8 mb-2 mx-auto border-t-blue-500">
+                    </div>
+                    <p class="text-[11px] text-slate-400 animate-pulse">AI đang quét sâu các dòng nhật ký...</p>
+                </div>
+                <div id="resultContainer"
+                    class="hidden flex-1 flex flex-col gap-4 custom-scroll overflow-y-auto max-h-[350px] pr-1">
+                    <div class="prose prose-invert text-slate-300 text-xs leading-relaxed" id="aiAdvice"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="authModal" class="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[100]">
+            <div class="bg-slate-900 border border-slate-800 w-full max-w-md p-6 rounded-2xl shadow-2xl relative">
+                <button id="closeAuthModal"
+                    class="absolute top-4 right-4 text-slate-500 hover:text-slate-300 text-sm cursor-pointer hidden"><i
+                        class="fa-solid fa-xmark text-lg"></i></button>
+                <h3 id="modalTitle" class="text-lg font-black tracking-wide text-slate-100 mb-2">Đăng Nhập Hệ Thống</h3>
+                <p class="text-xs text-slate-400 mb-4">Vui lòng đăng nhập để truy cập và lưu trữ dữ liệu an toàn trên
+                    đám mây.</p>
+
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Địa chỉ
+                            Email</label>
+                        <input type="email" id="authEmail"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-3 text-xs text-slate-200 focus:border-blue-500 focus:outline-none"
+                            placeholder="name@domain.com">
+                    </div>
+                    <div id="passwordContainer">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mật
+                                khẩu</label>
+                            <span id="forgotPasswordLink"
+                                class="text-[10px] text-blue-400 hover:text-blue-300 hover:underline cursor-pointer">Quên
+                                mật khẩu?</span>
+                        </div>
+                        <input type="password" id="authPassword"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 px-3 text-xs text-slate-200 focus:border-blue-500 focus:outline-none"
+                            placeholder="Tối thiểu 6 ký tự">
+                    </div>
+                    <button id="primaryAuthBtn"
+                        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 text-white text-xs font-bold py-2.5 rounded-xl transition-all shadow-md mt-2 cursor-pointer">Đăng
+                        Nhập Ngay</button>
+                </div>
+
+                <div class="border-t border-slate-800/80 mt-5 pt-4 text-center">
+                    <p id="toggleAuthModeText" class="text-xs text-slate-400">Chưa có tài khoản? <span
+                            id="switchAuthModeLink" class="text-blue-400 font-bold hover:underline cursor-pointer">Đăng
+                            ký ngay</span></p>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // ==========================================
+            // 1. CẤU HÌNH LIÊN KẾT FIREBASE
+            // ==========================================
+            // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+            const firebaseConfig = {
+                apiKey: "AIzaSyDEoPvPkgkVlUjbfwueIeHVbmMpQPHrV7s",
+                authDomain: "sinhvientietkiem.firebaseapp.com",
+                projectId: "sinhvientietkiem",
+                storageBucket: "sinhvientietkiem.firebasestorage.app",
+                messagingSenderId: "37990886365",
+                appId: "1:37990886365:web:ab0340d5cddda8ba9f6434",
+                measurementId: "G-K5D1TM4CTZ"
+            };
+            // Khởi tạo Firebase hoàn chỉnh và bật cờ hoạt động
+            const isFirebaseActive = true;
+            firebase.initializeApp(firebaseConfig);
+
+            // ==========================================
+            // 2. KHỞI TẠO BIẾN LỊCH VÀ DỮ LIỆU
+            // ==========================================
+            let realDate, currentRealYear, currentRealMonth, currentRealDay;
+
+            function updateRealDateInfo() {
+                realDate = new Date();
+                currentRealYear = realDate.getFullYear();
+                currentRealMonth = realDate.getMonth() + 1;
+                currentRealDay = realDate.getDate();
+            }
+
+            function createParticles(type) {
+                const overlay = document.getElementById('seasonalOverlay');
+                overlay.innerHTML = '';
+                const symbols = {
+                    'spring': ['🌸', '🍃', '✨', '🌱'],
+                    'summer': ['☀️', '🌊', '🫧', '✨'],
+                    'autumn': ['🍁', '🍂', '🌾', '✨'],
+                    'winter': ['❄️', '🌨️', '⛄', '✨']
+                };
+                const currentSymbols = symbols[type];
+                for (let i = 0; i < 20; i++) {
+                    const el = document.createElement('div');
+                    el.className = 'particle text-2xl md:text-3xl opacity-30 drop-shadow-lg';
+                    el.innerText = currentSymbols[Math.floor(Math.random() * currentSymbols.length)];
+                    el.style.left = `${Math.random() * 100}vw`;
+
+                    const duration = 15 + Math.random() * 25;
+                    const delay = Math.random() * 15;
+
+                    if (type === 'summer' || type === 'spring') {
+                        el.style.animation = `float-up ${duration}s linear ${delay}s infinite`;
+                    } else {
+                        el.style.animation = `float-down ${duration}s linear ${delay}s infinite`;
+                    }
+                    overlay.appendChild(el);
+                }
+            }
+
+            function applySeasonalTheme() {
+                const m = currentScope.month;
+                const body = document.getElementById('mainBody');
+                let season = '';
+
+                if (m >= 3 && m <= 5) season = 'spring';
+                else if (m >= 6 && m <= 8) season = 'summer';
+                else if (m >= 9 && m <= 11) season = 'autumn';
+                else season = 'winter';
+
+                body.className = `text-slate-100 font-sans selection:bg-blue-500/30 transition-colors duration-1000 overflow-x-hidden min-h-screen season-${season}`;
+                if (isLightMode) {
+                    body.classList.add('light-theme');
+                }
+
+                const titleBadge = document.getElementById('seasonTitleBadge');
+                if (titleBadge) {
+                    const badgeInfo = {
+                        'spring': { text: '🌿 Xuân Tươi Mới', class: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
+                        'summer': { text: '🌊 Hè Rực Rỡ', class: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' },
+                        'autumn': { text: '🍂 Thu Êm Đềm', class: 'bg-orange-500/20 text-orange-300 border-orange-500/30' },
+                        'winter': { text: '❄️ Đông Ấm Áp', class: 'bg-blue-500/20 text-blue-300 border-blue-500/30' }
+                    };
+                    titleBadge.innerText = badgeInfo[season].text;
+                    titleBadge.className = `text-[10px] px-2.5 py-0.5 rounded-full border font-bold ml-3 shadow-lg ${badgeInfo[season].class} hidden sm:inline-block`;
+                }
+
+                createParticles(season);
+            }
+
+            updateRealDateInfo();
+
+            let currentScope = { level: 'month', year: currentRealYear, month: currentRealMonth, week: null, day: null };
+            let dbStorage = JSON.parse(localStorage.getItem('student_budget_matrix_firebase')) || {};
+            let colChartInstance = null, lineChartInstance = null;
+            let isSignUpMode = false;
+            let isForgotPasswordMode = false;
+            let currentUserUid = null;
+
+            let isLightMode = localStorage.getItem('theme_mode') === 'light';
+
+            function toggleTheme() {
+                isLightMode = !isLightMode;
+                localStorage.setItem('theme_mode', isLightMode ? 'light' : 'dark');
+                applyThemeClass();
+            }
+
+            function applyThemeClass() {
+                const body = document.getElementById('mainBody');
+                const btn = document.getElementById('themeToggleBtn');
+                if (isLightMode) {
+                    body.classList.add('light-theme');
+                    if (btn) btn.innerHTML = '<i class="fa-solid fa-moon text-lg text-indigo-500"></i>';
+                } else {
+                    body.classList.remove('light-theme');
+                    if (btn) btn.innerHTML = '<i class="fa-solid fa-sun text-lg text-amber-400"></i>';
+                }
+            }
+
+            function getColumnIndex(jsDay) { return jsDay === 0 ? 6 : jsDay - 1; }
+            const dayOfWeekLabels = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
+
+            function parseShortcutValue(inputStr) {
+                if (!inputStr) return 0;
+                let normalized = inputStr.toString().trim().toLowerCase().replace(/,/g, '.');
+                if (normalized.endsWith('m')) return (parseFloat(normalized.replace('m', '')) || 0) * 1000000;
+                if (normalized.endsWith('k')) return (parseFloat(normalized.replace('k', '')) || 0) * 1000;
+                return parseFloat(normalized) || 0;
+            }
+
+            // ==========================================
+            // 3. KHỞI CHẠY ỨNG DỤNG & ĐỒNG BỘ AUTH
+            // ==========================================
+            window.addEventListener('DOMContentLoaded', () => {
+                applyThemeClass();
+                document.getElementById('themeToggleBtn').addEventListener('click', toggleTheme);
+
+                const savedKey = localStorage.getItem('gemini_api_key');
+                if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
+
+                setupYearDropdown();
+                renderMonths();
+                initCharts();
+
+                selectYear(currentScope.year, false);
+                selectMonth(currentScope.month);
+                autoSelectCurrentDate();
+
+                if (isFirebaseActive) {
+                    firebase.auth().onAuthStateChanged(user => {
+                        if (user) {
+                            currentUserUid = user.uid;
+                            document.getElementById('showLoginBtn').classList.add('hidden');
+                            document.getElementById('userInfoContainer').classList.remove('hidden');
+                            document.getElementById('userEmailText').innerText = user.email;
+                            toggleModal(false); // Ẩn màn hình đăng nhập khi thành công
+
+                            updateRealDateInfo(); // Cập nhật thời gian thực lúc đăng nhập
+                            autoSelectCurrentDate(); // Mặc định ngay vào ngày hôm nay
+
+                            syncDataFromCloud();
+                        } else {
+                            currentUserUid = null;
+                            document.getElementById('showLoginBtn').classList.remove('hidden');
+                            document.getElementById('userInfoContainer').classList.add('hidden');
+                            toggleModal(true); // Ép buộc hiển thị màn hình đăng nhập khi chưa đăng nhập
+                        }
+                    });
+                }
+
+                document.getElementById('showLoginBtn').addEventListener('click', () => toggleModal(true));
+                document.getElementById('closeAuthModal').addEventListener('click', () => toggleModal(false));
+                document.getElementById('switchAuthModeLink').addEventListener('click', switchAuthMode);
+                document.getElementById('primaryAuthBtn').addEventListener('click', handleAuthSubmit);
+                document.getElementById('forgotPasswordLink').addEventListener('click', switchForgotPasswordMode);
+                document.getElementById('logoutBtn').addEventListener('click', () => firebase.auth().signOut());
+
+                document.getElementById('monthlyIncome').addEventListener('input', () => { saveMonthlyFixedData(); recalculateAll(); uploadDataToCloud(); });
+                document.getElementById('monthlyFixedExpense').addEventListener('input', () => { saveMonthlyFixedData(); recalculateAll(); uploadDataToCloud(); });
+                document.getElementById('dayLogs').addEventListener('input', () => { handleDayLogsInput(); uploadDataToCloud(); });
+                document.getElementById('yearSelect').addEventListener('change', (e) => { selectYear(parseInt(e.target.value), true); });
+                document.getElementById('apiKeyInput').addEventListener('input', (e) => { localStorage.setItem('gemini_api_key', e.target.value.trim()); });
+            });
+
+            // ==========================================
+            // 4. XỬ LÝ ĐĂNG NHẬP / ĐĂNG KÝ FIREBASE
+            // ==========================================
+            function toggleModal(show) {
+                const modal = document.getElementById('authModal');
+                if (show) modal.classList.remove('hidden'); else modal.classList.add('hidden');
+            }
+
+            function switchAuthMode() {
+                isForgotPasswordMode = false;
+                isSignUpMode = !isSignUpMode;
+                document.getElementById('passwordContainer').classList.remove('hidden');
+                document.getElementById('modalTitle').innerText = isSignUpMode ? "Đăng Ký Tài Khoản Mới" : "Đăng Nhập Hệ Thống";
+                document.getElementById('primaryAuthBtn').innerText = isSignUpMode ? "Tạo Tài Khoản" : "Đăng Nhập Ngay";
+                document.getElementById('toggleAuthModeText').innerHTML = isSignUpMode ?
+                    `Đã có tài khoản? <span id="switchAuthModeLink" class="text-blue-400 font-bold hover:underline cursor-pointer">Đăng nhập</span>` :
+                    `Chưa có tài khoản? <span id="switchAuthModeLink" class="text-blue-400 font-bold hover:underline cursor-pointer">Đăng ký ngay</span>`;
+                document.getElementById('switchAuthModeLink').addEventListener('click', switchAuthMode);
+            }
+
+            function switchForgotPasswordMode() {
+                isForgotPasswordMode = true;
+                isSignUpMode = false;
+                document.getElementById('passwordContainer').classList.add('hidden');
+                document.getElementById('modalTitle').innerText = "Khôi Phục Mật Khẩu";
+                document.getElementById('primaryAuthBtn').innerText = "Gửi Link Khôi Phục";
+                document.getElementById('toggleAuthModeText').innerHTML = `Quay lại <span id="switchAuthModeLink" class="text-blue-400 font-bold hover:underline cursor-pointer">Đăng nhập</span>`;
+                document.getElementById('switchAuthModeLink').addEventListener('click', () => {
+                    isSignUpMode = true; // Set true để switchAuthMode đảo ngược thành false (đăng nhập)
+                    switchAuthMode();
+                });
+            }
+
+            function handleAuthSubmit() {
+                const email = document.getElementById('authEmail').value.trim();
+                const password = document.getElementById('authPassword').value;
+
+                if (!isFirebaseActive) { alert("Hệ thống Firebase chưa được bật. Vui lòng cấu hình tham số firebaseConfig."); return; }
+                if (!email) { alert("Vui lòng điền địa chỉ email."); return; }
+                if (!password && !isForgotPasswordMode) { alert("Vui lòng điền mật khẩu."); return; }
+
+                if (isForgotPasswordMode) {
+                    firebase.auth().sendPasswordResetEmail(email)
+                        .then(() => {
+                            alert("Hệ thống đã gửi một đường link khôi phục mật khẩu vào Email của bạn. Vui lòng kiểm tra hộp thư (kể cả thư rác) để đặt lại mật khẩu mới!");
+                            isSignUpMode = true;
+                            switchAuthMode(); // Quay về giao diện đăng nhập
+                        })
+                        .catch(err => alert("Lỗi gửi link khôi phục: " + err.message));
+                } else if (isSignUpMode) {
+                    firebase.auth().createUserWithEmailAndPassword(email, password)
+                        .then(() => { alert("Đăng ký thành công!"); })
+                        .catch(err => alert("Lỗi đăng ký: " + err.message));
+                } else {
+                    firebase.auth().signInWithEmailAndPassword(email, password)
+                        .catch(err => alert("Lỗi đăng nhập: " + err.message));
+                }
+            }
+
+            function uploadDataToCloud() {
+                if (!isFirebaseActive || !currentUserUid) return;
+                firebase.database().ref('users/' + currentUserUid + '/budgetData').set(dbStorage);
+            }
+
+            function syncDataFromCloud() {
+                if (!isFirebaseActive || !currentUserUid) return;
+                firebase.database().ref('users/' + currentUserUid + '/budgetData').once('value')
+                    .then(snapshot => {
+                        if (snapshot.exists()) {
+                            dbStorage = snapshot.val();
+                            localStorage.setItem('student_budget_matrix_firebase', JSON.stringify(dbStorage));
+                            loadMonthlyFixedData(currentScope.month);
+                            recalculateAll();
+                            if (currentScope.level === 'day') {
+                                const dKey = `y${currentScope.year}-m${currentScope.month}-d${currentScope.day}`;
+                                document.getElementById('dayLogs').value = dbStorage[dKey]?.logs || "";
+                            }
+                        }
+                    });
+            }
+
+            // ==========================================
+            // 5. THUẬT TOÁN ĐIỀU HƯỚNG LỊCH & TÍNH TOÁN
+            // ==========================================
+            function setupYearDropdown() {
+                const select = document.getElementById('yearSelect'); select.innerHTML = '';
+                for (let y = 2024; y <= 2035; y++) {
+                    const opt = document.createElement('option'); opt.value = y; opt.innerText = `Năm ${y}`;
+                    if (y === currentScope.year) opt.selected = true; select.appendChild(opt);
+                }
+            }
+
+            function selectYear(y, reRender = true) {
+                currentScope.year = y;
+                document.getElementById('balanceTopLabel').innerText = `Số Dư Tổng Tháng (${y})`;
+                if (reRender) selectMonth(currentScope.month);
+            }
+
+            function renderMonths() {
+                const grid = document.getElementById('monthsGrid'); grid.innerHTML = '';
+                for (let m = 1; m <= 12; m++) {
+                    const btn = document.createElement('button');
+                    btn.className = `p-2.5 rounded-xl text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-slate-200 cursor-pointer text-center`;
+                    btn.id = `monthBtn-${m}`; btn.innerText = `Tháng ${m}`;
+                    btn.onclick = () => selectMonth(m); grid.appendChild(btn);
+                }
+            }
+
+            let monthlyWeeksStructure = {};
+
+            function selectMonth(m) {
+                currentScope.level = 'month'; currentScope.month = m; currentScope.week = null; currentScope.day = null;
+                document.querySelectorAll('[id^="monthBtn-"]').forEach(el => el.classList.remove('tab-active'));
+                document.getElementById(`monthBtn-${m}`).classList.add('tab-active');
+
+                document.getElementById('monthInputSection').classList.remove('opacity-30', 'pointer-events-none');
+                document.getElementById('dayInputSection').classList.add('opacity-30', 'pointer-events-none');
+                document.getElementById('dayBadge').innerText = "Chọn một ngày để viết nhật ký";
+                document.getElementById('dayLogs').value = "";
+                document.getElementById('weekSummaryBox').classList.add('hidden');
+                document.getElementById('timePath').innerText = `${currentScope.year} > Tháng ${m}`;
+
+                loadMonthlyFixedData(m);
+                buildAccurateCalendarGrid(currentScope.year, m);
+                recalculateAll();
+                applySeasonalTheme();
+            }
+
+            function buildAccurateCalendarGrid(year, month) {
+                monthlyWeeksStructure = {};
+                const weeksListEl = document.getElementById('weeksList'); weeksListEl.innerHTML = '';
+                const totalDaysInMonth = new Date(year, month, 0).getDate();
+                let currentWeekIndex = 1;
+                monthlyWeeksStructure[currentWeekIndex] = Array(7).fill(null);
+
+                for (let day = 1; day <= totalDaysInMonth; day++) {
+                    const dateObj = new Date(year, month - 1, day);
+                    let colIdx = getColumnIndex(dateObj.getDay());
+                    monthlyWeeksStructure[currentWeekIndex][colIdx] = { dayNum: day, dayOfWeekName: dayOfWeekLabels[colIdx] };
+                    if (colIdx === 6 && day < totalDaysInMonth) {
+                        currentWeekIndex++; monthlyWeeksStructure[currentWeekIndex] = Array(7).fill(null);
+                    }
+                }
+
+                Object.keys(monthlyWeeksStructure).forEach(wKey => {
+                    const btn = document.createElement('button');
+                    btn.className = `w-full p-2.5 rounded-xl text-left text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 cursor-pointer flex items-center`;
+                    btn.id = `weekBtn-${wKey}`;
+                    btn.innerHTML = `<i class="fa-solid fa-layer-group text-[11px] mr-2 text-indigo-400"></i>Tuần ${wKey}`;
+                    btn.onclick = (e) => { e.stopPropagation(); selectWeek(parseInt(wKey)); };
+                    weeksListEl.appendChild(btn);
+                });
+            }
+
+            function autoSelectCurrentDate() {
+                // Đảm bảo đang ở đúng năm và tháng hiện tại trước khi chọn ngày
+                if (currentScope.year !== currentRealYear) {
+                    selectYear(currentRealYear, false);
+                }
+                if (currentScope.month !== currentRealMonth) {
+                    selectMonth(currentRealMonth);
+                }
+
+                let targetedWeek = null;
+                Object.keys(monthlyWeeksStructure).forEach(wIdx => {
+                    const containsDay = monthlyWeeksStructure[wIdx].some(d => d && d.dayNum === currentRealDay);
+                    if (containsDay) targetedWeek = parseInt(wIdx);
+                });
+                if (targetedWeek) {
+                    selectWeek(targetedWeek);
+                    const dayData = monthlyWeeksStructure[targetedWeek].find(d => d && d.dayNum === currentRealDay);
+                    if (dayData) selectDay(currentRealDay, dayData.dayOfWeekName);
+                } else { selectWeek(1); }
+            }
+
+            function selectWeek(w) {
+                currentScope.level = 'week'; currentScope.week = w; currentScope.day = null;
+                document.querySelectorAll('[id^="weekBtn-"]').forEach(el => el.classList.remove('tab-active'));
+                if (document.getElementById(`weekBtn-${w}`)) document.getElementById(`weekBtn-${w}`).classList.add('tab-active');
+
+                document.getElementById('timePath').innerText = `${currentScope.year} > Tháng ${currentScope.month} > Tuần ${w}`;
+                document.getElementById('weekSummaryBox').classList.remove('hidden');
+                document.getElementById('weekSummaryTitle').innerText = `Tổng kết Tuần ${w}`;
+
+                const daysGrid = document.getElementById('daysGrid'); daysGrid.innerHTML = '';
+                const weekDaysRow = monthlyWeeksStructure[w] || Array(7).fill(null);
+
+                weekDaysRow.forEach((dayData) => {
+                    if (dayData === null) {
+                        const emptyBox = document.createElement('div');
+                        emptyBox.className = "bg-slate-950/20 border border-dashed border-slate-900 rounded-xl min-h-[48px]";
+                        daysGrid.appendChild(emptyBox);
+                    } else {
+                        const btn = document.createElement('button');
+                        btn.className = `p-1.5 rounded-xl text-center bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 cursor-pointer flex flex-col items-center justify-center min-h-[48px] transition-all`;
+                        btn.id = `dayBtn-${dayData.dayNum}`;
+                        if (currentScope.year === currentRealYear && currentScope.month === currentRealMonth && dayData.dayNum === currentRealDay) {
+                            btn.classList.add('border-amber-500/60', 'bg-amber-950/20', 'ring-1', 'ring-amber-500/30');
+                        }
+                        btn.innerHTML = `<span class="text-xs font-black text-slate-100">${dayData.dayNum}</span>`;
+                        btn.onclick = () => selectDay(dayData.dayNum, dayData.dayOfWeekName);
+                        daysGrid.appendChild(btn);
+                    }
+                });
+                recalculateAll();
+            }
+
+            function selectDay(dayNum, dayOfWeekName) {
+                currentScope.level = 'day'; currentScope.day = dayNum;
+                document.querySelectorAll('[id^="dayBtn-"]').forEach(el => el.classList.remove('tab-active'));
+                if (document.getElementById(`dayBtn-${dayNum}`)) document.getElementById(`dayBtn-${dayNum}`).classList.add('tab-active');
+
+                document.getElementById('timePath').innerText = `${currentScope.year} > T.${currentScope.month} > Tv.${currentScope.week} > ${dayOfWeekName}, Ngày ${dayNum}`;
+                document.getElementById('dayBadge').innerText = `Nhật ký: ${dayOfWeekName}, Ngày ${dayNum}/${currentScope.month}/${currentScope.year}`;
+                document.getElementById('dayInputSection').classList.remove('opacity-30', 'pointer-events-none');
+
+                const dayStorageKey = `y${currentScope.year}-m${currentScope.month}-d${dayNum}`;
+                document.getElementById('dayLogs').value = dbStorage[dayStorageKey]?.logs ? dbStorage[dayStorageKey].logs : "";
+                recalculateAll();
+            }
+
+            function loadMonthlyFixedData(m) {
+                document.getElementById('monthBadge').innerText = `Cố định: Tháng ${m} / ${currentScope.year}`;
+                const monthKey = `y${currentScope.year}-m${m}`;
+                document.getElementById('monthlyIncome').value = dbStorage[monthKey]?.rawIncome || '';
+                document.getElementById('monthlyFixedExpense').value = dbStorage[monthKey]?.rawFixedExpense || '';
+            }
+
+            function saveMonthlyFixedData() {
+                const monthKey = `y${currentScope.year}-m${currentScope.month}`;
+                if (!dbStorage[monthKey]) dbStorage[monthKey] = {};
+                const rawInc = document.getElementById('monthlyIncome').value;
+                const rawExp = document.getElementById('monthlyFixedExpense').value;
+
+                dbStorage[monthKey].rawIncome = rawInc;
+                dbStorage[monthKey].rawFixedExpense = rawExp;
+                dbStorage[monthKey].income = parseShortcutValue(rawInc);
+                dbStorage[monthKey].fixedExpense = parseShortcutValue(rawExp);
+                localStorage.setItem('student_budget_matrix_firebase', JSON.stringify(dbStorage));
+            }
+
+            function handleDayLogsInput() {
+                if (currentScope.level !== 'day') return;
+                const text = document.getElementById('dayLogs').value;
+                const dayStorageKey = `y${currentScope.year}-m${currentScope.month}-d${currentScope.day}`;
+                if (!dbStorage[dayStorageKey]) dbStorage[dayStorageKey] = {};
+                dbStorage[dayStorageKey].logs = text;
+
+                let incomeSum = 0, expenseSum = 0;
+                const regex = /([+-])\s*(\d+(?:\.\d+)?)\s*(k|m|đ|vnd|vnđ)?/gi;
+                let match;
+                while ((match = regex.exec(text)) !== null) {
+                    const sign = match[1]; let value = parseFloat(match[2]);
+                    const unit = match[3] ? match[3].toLowerCase() : '';
+                    if (unit === 'k') value *= 1000; else if (unit === 'm') value *= 1000000;
+                    if (sign === '+') incomeSum += value; else if (sign === '-') expenseSum += value;
+                }
+                dbStorage[dayStorageKey].income = incomeSum; dbStorage[dayStorageKey].expense = expenseSum;
+                localStorage.setItem('student_budget_matrix_firebase', JSON.stringify(dbStorage));
+                recalculateAll();
+            }
+
+            function recalculateAll() {
+                const y = currentScope.year, m = currentScope.month;
+                const monthKey = `y${y}-m${m}`;
+                const baseIncome = dbStorage[monthKey]?.income || 0;
+                const baseExpense = dbStorage[monthKey]?.fixedExpense || 0;
+
+                let totalDayIncome = 0, totalDayExpense = 0;
+                let weekDataSummary = {};
+
+                Object.keys(monthlyWeeksStructure).forEach(wIdx => {
+                    weekDataSummary[wIdx] = { inc: 0, exp: 0 };
+                    monthlyWeeksStructure[wIdx].forEach(dInfo => {
+                        if (dInfo) {
+                            const dKey = `y${y}-m${m}-d${dInfo.dayNum}`;
+                            if (dbStorage[dKey]) {
+                                let dInc = dbStorage[dKey].income || 0; let dExp = dbStorage[dKey].expense || 0;
+                                totalDayIncome += dInc; totalDayExpense += dExp;
+                                weekDataSummary[wIdx].inc += dInc; weekDataSummary[wIdx].exp += dExp;
+                            }
+                        }
+                    });
+                });
+
+                let displayIncome = 0, displayExpense = 0;
+
+                if (currentScope.level === 'day') {
+                    const dKey = `y${y}-m${m}-d${currentScope.day}`;
+                    displayIncome = dbStorage[dKey]?.income || 0;
+                    displayExpense = dbStorage[dKey]?.expense || 0;
+                } else if (currentScope.level === 'week') {
+                    const w = currentScope.week;
+                    displayIncome = weekDataSummary[w]?.inc || 0;
+                    displayExpense = weekDataSummary[w]?.exp || 0;
+                } else {
+                    displayIncome = baseIncome + totalDayIncome;
+                    displayExpense = baseExpense + totalDayExpense;
+                }
+
+                const displayRemaining = displayIncome - displayExpense;
+                const finalMonthRemaining = (baseIncome + totalDayIncome) - (baseExpense + totalDayExpense);
+
+                document.getElementById('topNavRemaining').innerText = `${finalMonthRemaining.toLocaleString('vi-VN')} ₫`;
+                document.getElementById('topNavRemaining').className = finalMonthRemaining >= 0 ? "text-base font-black text-emerald-400 tracking-wide" : "text-base font-black text-rose-400 tracking-wide";
+
+                document.getElementById('statTotalIncome').innerText = `${displayIncome.toLocaleString('vi-VN')} ₫`;
+                document.getElementById('statTotalExpense').innerText = `${displayExpense.toLocaleString('vi-VN')} ₫`;
+                document.getElementById('statRemaining').innerText = `${displayRemaining.toLocaleString('vi-VN')} ₫`;
+                document.getElementById('statRemaining').className = displayRemaining >= 0 ? "font-black text-right text-sm text-emerald-400" : "font-black text-right text-sm text-rose-400";
+
+                if (currentScope.week) {
+                    const w = currentScope.week;
+                    const weekNetValue = (weekDataSummary[w]?.inc || 0) - (weekDataSummary[w]?.exp || 0);
+                    document.getElementById('weekNetText').innerText = `${weekNetValue >= 0 ? '+' : ''}${weekNetValue.toLocaleString('vi-VN')} ₫`;
+                    document.getElementById('weekNetText').className = weekNetValue >= 0 ? "text-emerald-400 font-black text-sm tracking-wide" : "text-rose-400 font-black text-sm tracking-wide";
+                }
+                updateCharts(baseIncome + totalDayIncome, baseExpense + totalDayExpense, weekDataSummary);
+            }
+
+            function initCharts() {
+                colChartInstance = new Chart(document.getElementById('columnChart').getContext('2d'), {
+                    type: 'bar',
+                    data: { labels: ['Tổng Thu', 'Tổng Chi'], datasets: [{ data: [0, 0], backgroundColor: ['rgba(52, 211, 153, 0.5)', 'rgba(248, 113, 113, 0.5)'], borderColor: ['#10b981', '#ef4444'], borderWidth: 1 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { ticks: { color: '#94a3b8', font: { size: 9 } } } } }
+                });
+                lineChartInstance = new Chart(document.getElementById('lineChart').getContext('2d'), {
+                    type: 'line',
+                    data: { labels: ['T1', 'T2', 'T3', 'T4', 'T5'], datasets: [{ label: 'Ròng', data: [0, 0, 0, 0, 0], borderColor: '#6366f1', borderWidth: 2, tension: 0.2, fill: false }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { display: false }, x: { ticks: { color: '#94a3b8', font: { size: 9 } } } } }
+                });
+            }
+
+            function updateCharts(income, expense, weekDataSummary) {
+                colChartInstance.data.datasets[0].data = [income, expense]; colChartInstance.update();
+                const lineData = [], lineLabels = [];
+                Object.keys(weekDataSummary).forEach(wIdx => {
+                    lineLabels.push(`Tuần ${wIdx}`); lineData.push(weekDataSummary[wIdx].inc - weekDataSummary[wIdx].exp);
+                });
+                lineChartInstance.data.labels = lineLabels; lineChartInstance.data.datasets[0].data = lineData; lineChartInstance.update();
+            }
+
+            // ==========================================
+            // 6. LOGIC AI DEEP SCAN
+            // ==========================================
+            document.getElementById('analyzeBtn').addEventListener('click', async () => {
+                const apiKey = localStorage.getItem('gemini_api_key') || document.getElementById('apiKeyInput').value.trim();
+                if (!apiKey) { alert("Vui lòng cấu hình Gemini API Key trước!"); return; }
+
+                document.getElementById('placeholderText').classList.add('hidden');
+                document.getElementById('resultContainer').classList.add('hidden');
+                document.getElementById('loadingStatus').classList.remove('hidden');
+
+                const y = currentScope.year;
+                const m = currentScope.month;
+                const monthKey = `y${y}-m${m}`;
+
+                let totalIncome = dbStorage[monthKey]?.income || 0;
+                let fixedExpense = dbStorage[monthKey]?.fixedExpense || 0;
+
+                let gatheredLogs = [];
+
+                if (currentScope.level === 'day') {
+                    const dKey = `y${y}-m${m}-d${currentScope.day}`;
+                    if (dbStorage[dKey]?.logs) {
+                        gatheredLogs.push(`Ngày ${currentScope.day}: ${dbStorage[dKey].logs}`);
+                    }
+                } else if (currentScope.level === 'week') {
+                    const w = currentScope.week;
+                    monthlyWeeksStructure[w].forEach(dInfo => {
+                        if (dInfo) {
+                            const dKey = `y${y}-m${m}-d${dInfo.dayNum}`;
+                            if (dbStorage[dKey]?.logs) {
+                                gatheredLogs.push(`Ngày ${dInfo.dayNum}: ${dbStorage[dKey].logs}`);
+                            }
+                        }
+                    });
+                } else {
+                    Object.keys(dbStorage).forEach(key => {
+                        if (key.startsWith(`y${y}-m${m}-d`)) {
+                            const dayNum = key.split('-d')[1];
+                            if (dbStorage[key]?.logs) {
+                                gatheredLogs.push(`Ngày ${dayNum}: ${dbStorage[key].logs}`);
+                            }
+                        }
+                    });
+                }
+
+                const logsContextText = gatheredLogs.length > 0 ? gatheredLogs.join('\n') : "Không ghi nhận dòng nhật ký cụ thể nào trong mốc này.";
+
+                const prompt = `Bạn là chuyên gia phân tích tài chính cá nhân dành cho sinh viên. 
+Hãy phân tích dữ liệu tài chính của mốc thời gian sau:
+- Phạm vi xem: Cấp độ ${currentScope.level === 'day' ? 'Ngày ' + currentScope.day : currentScope.level === 'week' ? 'Tuần ' + currentScope.week : 'Cả tháng ' + m} (Năm ${y})
+- Khoản thu cố định tháng: ${totalIncome.toLocaleString('vi-VN')} đ
+- Khoản chi tiền trọ/điện nước cố định: ${fixedExpense.toLocaleString('vi-VN')} đ
+
+Dưới đây là TOÀN BỘ nhật ký chi tiêu thực tế do người dùng gõ tay:
+"""
+${logsContextText}
+"""
+
+YÊU CẦU NHẬN XÉT:
+1. Đọc kỹ các chuỗi chữ trong nhật ký (ví dụ: ăn vặt, tiêu linh tinh, làm thêm, mua đồ...) để chỉ rõ người dùng đang tốn tiền hay kiếm được tiền từ thói quen nào.
+2. Viết ngắn gọn, súc tích bằng định dạng Markdown.
+3. Chia rõ làm 2 phần: [Đánh giá thói quen dòng tiền] và [Giải pháp cắt giảm & tối ưu hóa].
+Giới hạn câu chữ dưới 150 từ.`;
+
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+                    const data = await response.json();
+
+                    let aiResponseText = data.candidates[0].content.parts[0].text;
+                    document.getElementById('aiAdvice').innerHTML = aiResponseText.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                    document.getElementById('loadingStatus').classList.add('hidden');
+                    document.getElementById('resultContainer').classList.remove('hidden');
+                } catch (e) {
+                    alert("Lỗi kết nối AI hoặc API Key của bạn chưa chính xác!");
+                    document.getElementById('loadingStatus').classList.add('hidden');
+                    document.getElementById('placeholderText').classList.remove('hidden');
+                }
+            });
+
+            document.getElementById('analyzeYearBtn').addEventListener('click', async () => {
+                const apiKey = localStorage.getItem('gemini_api_key') || document.getElementById('apiKeyInput').value.trim();
+                if (!apiKey) { alert("Vui lòng cấu hình Gemini API Key trước!"); return; }
+
+                document.getElementById('placeholderText').classList.add('hidden');
+                document.getElementById('resultContainer').classList.add('hidden');
+                document.getElementById('loadingStatus').classList.remove('hidden');
+
+                const y = currentScope.year;
+
+                let totalYearIncome = 0;
+                let totalYearFixedExpense = 0;
+                let gatheredLogs = [];
+
+                for (let m = 1; m <= 12; m++) {
+                    const monthKey = `y${y}-m${m}`;
+                    totalYearIncome += dbStorage[monthKey]?.income || 0;
+                    totalYearFixedExpense += dbStorage[monthKey]?.fixedExpense || 0;
+                }
+
+                Object.keys(dbStorage).forEach(key => {
+                    if (key.startsWith(`y${y}-`)) {
+                        // Trích xuất tháng và ngày từ các bản ghi nhật ký
+                        const match = key.match(/y\d+-m(\d+)-d(\d+)/);
+                        if (match && dbStorage[key]?.logs) {
+                            gatheredLogs.push(`Tháng ${match[1]}, Ngày ${match[2]}: ${dbStorage[key].logs}`);
+                        }
+                    }
+                });
+
+                const logsContextText = gatheredLogs.length > 0 ? gatheredLogs.join('\n') : "Không ghi nhận dòng nhật ký cụ thể nào trong năm này.";
+
+                const prompt = `Bạn là chuyên gia phân tích tài chính cá nhân dành cho sinh viên. 
+Hãy tổng kết và đánh giá dữ liệu tài chính của TOÀN BỘ NĂM ${y}:
+- Tổng thu nhập cố định các tháng: ${totalYearIncome.toLocaleString('vi-VN')} đ
+- Tổng chi phí cố định các tháng: ${totalYearFixedExpense.toLocaleString('vi-VN')} đ
+
+Dưới đây là toàn bộ nhật ký chi tiêu trong năm:
+"""
+${logsContextText}
+"""
+
+YÊU CẦU ĐÁNH GIÁ NĂM:
+1. Đánh giá tổng quan bức tranh tài chính của cả năm.
+2. Chỉ ra các khoản lãng phí lớn hoặc các thói quen xấu lặp đi lặp lại.
+3. Đề xuất 1-2 lời khuyên chiến lược để tiết kiệm tốt hơn trong năm tới.
+Viết ngắn gọn, định dạng Markdown rõ ràng. Giới hạn dưới 200 từ.`;
+
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+                    const data = await response.json();
+
+                    let aiResponseText = data.candidates[0].content.parts[0].text;
+                    document.getElementById('aiAdvice').innerHTML = aiResponseText.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                    document.getElementById('loadingStatus').classList.add('hidden');
+                    document.getElementById('resultContainer').classList.remove('hidden');
+                } catch (e) {
+                    alert("Lỗi kết nối AI hoặc API Key của bạn chưa chính xác!");
+                    document.getElementById('loadingStatus').classList.add('hidden');
+                    document.getElementById('placeholderText').classList.remove('hidden');
+                }
+            });
+        </script>
+    </div>
+</body>
+
+</html>
