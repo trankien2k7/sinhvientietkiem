@@ -311,7 +311,56 @@
             </div>
         </nav>
 
-        <div class="flex-1 max-w-[1700px] w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="flex-1 max-w-[1700px] w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
+
+            <!-- STATS CARDS ROW -->
+            <div class="lg:col-span-12 grid grid-cols-2 lg:grid-cols-4 gap-4 mb-2">
+                <div class="bg-slate-900/40 border border-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-xl flex items-center justify-between transition-transform hover:scale-[1.02]">
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Tổng Thu (Tháng)</p>
+                        <p id="cardTotalIncome" class="text-lg font-black text-emerald-400 mt-1 drop-shadow-md">0 ₫</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 ring-1 ring-emerald-500/20">
+                        <i class="fa-solid fa-arrow-down text-lg"></i>
+                    </div>
+                </div>
+                <div class="bg-slate-900/40 border border-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-xl flex items-center justify-between transition-transform hover:scale-[1.02]">
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Tổng Chi (Tháng)</p>
+                        <p id="cardTotalExpense" class="text-lg font-black text-rose-400 mt-1 drop-shadow-md">0 ₫</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400 ring-1 ring-rose-500/20">
+                        <i class="fa-solid fa-arrow-up text-lg"></i>
+                    </div>
+                </div>
+                <div class="bg-slate-900/40 border border-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-xl flex items-center justify-between transition-transform hover:scale-[1.02]">
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Số Dư Hiện Tại</p>
+                        <p id="cardRemaining" class="text-lg font-black text-blue-400 mt-1 drop-shadow-md">0 ₫</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 ring-1 ring-blue-500/20">
+                        <i class="fa-solid fa-wallet text-lg"></i>
+                    </div>
+                </div>
+                <div class="bg-slate-900/40 border border-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-xl flex flex-col justify-center transition-transform hover:scale-[1.02]">
+                    <div class="flex justify-between items-end mb-2">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Tiến Độ Tiết Kiệm</p>
+                        <span id="savingsPercent" class="text-xs font-black text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-md ring-1 ring-indigo-500/20">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-950/50 rounded-full h-2.5 overflow-hidden ring-1 ring-slate-800 inset-shadow-sm">
+                        <div id="savingsProgressBar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-2.5 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)] transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BUDGET WARNING BANNER -->
+            <div id="budgetWarningBanner" class="lg:col-span-12 hidden bg-rose-500/10 border border-rose-500/30 rounded-xl p-3 mb-2 flex items-center gap-3 transition-all">
+                <i class="fa-solid fa-triangle-exclamation text-rose-400 text-lg"></i>
+                <div>
+                    <h4 class="text-rose-400 font-bold text-sm">Cảnh báo Ngân Sách!</h4>
+                    <p class="text-rose-300 text-xs">Bạn đã chi tiêu vượt quá số tiền hiện có.</p>
+                </div>
+            </div>
 
             <div class="lg:col-span-6 flex flex-col gap-5">
                 <div class="bg-slate-900/40 border border-slate-800/80 backdrop-blur-md rounded-2xl p-4 shadow-xl">
@@ -337,10 +386,10 @@
                             id="timePath">Đang tải...</span>
                     </div>
 
-                    <div class="grid grid-cols-12 gap-4 flex-1">
-                        <div class="col-span-3 flex flex-col gap-2 border-r border-slate-800/80 pr-2 custom-scroll overflow-y-auto"
+                    <div class="flex flex-col md:flex-row gap-4 flex-1">
+                        <div class="w-full md:w-1/4 flex md:flex-col gap-2 md:border-r border-slate-800/80 md:pr-2 custom-scroll overflow-x-auto md:overflow-x-hidden md:overflow-y-auto pb-2 md:pb-0 scroll-smooth snap-x"
                             id="weeksList"></div>
-                        <div class="col-span-9 flex flex-col justify-between">
+                        <div class="w-full md:w-3/4 flex flex-col justify-between">
                             <div>
                                 <div class="grid grid-cols-7 gap-1 text-center mb-2">
                                     <div class="text-[10px] font-bold text-slate-400 uppercase py-1">T2</div>
@@ -411,6 +460,16 @@
                                     <input type="text" id="monthlyFixedExpense"
                                         class="w-full bg-slate-900 border border-slate-800 rounded-xl py-1.5 pl-7 pr-3 text-xs text-slate-100 focus:border-blue-500 focus:outline-none"
                                         placeholder="Ví dụ: 1.8m">
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 text-indigo-400"><i class="fa-solid fa-bullseye mr-1"></i> Mục tiêu tiết kiệm (ví dụ: 1m)</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-2 text-slate-500 text-xs">₫</span>
+                                    <input type="text" id="monthlySavingsGoal"
+                                        class="w-full bg-slate-900 border border-indigo-500/30 rounded-xl py-1.5 pl-7 pr-3 text-xs text-slate-100 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all"
+                                        placeholder="Ví dụ: 1m">
                                 </div>
                             </div>
                         </div>
@@ -692,6 +751,7 @@
 
                 document.getElementById('monthlyIncome').addEventListener('input', () => { saveMonthlyFixedData(); recalculateAll(); uploadDataToCloud(); });
                 document.getElementById('monthlyFixedExpense').addEventListener('input', () => { saveMonthlyFixedData(); recalculateAll(); uploadDataToCloud(); });
+                document.getElementById('monthlySavingsGoal').addEventListener('input', () => { saveMonthlyFixedData(); recalculateAll(); uploadDataToCloud(); });
                 document.getElementById('dayLogs').addEventListener('input', () => { handleDayLogsInput(); uploadDataToCloud(); });
                 document.getElementById('yearSelect').addEventListener('change', (e) => { selectYear(parseInt(e.target.value), true); });
                 document.getElementById('apiKeyInput').addEventListener('input', (e) => { localStorage.setItem('gemini_api_key', e.target.value.trim()); });
@@ -845,7 +905,7 @@
 
                 Object.keys(monthlyWeeksStructure).forEach(wKey => {
                     const btn = document.createElement('button');
-                    btn.className = `w-full p-2.5 rounded-xl text-left text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 cursor-pointer flex items-center`;
+                    btn.className = `min-w-[100px] md:min-w-0 w-full p-2.5 rounded-xl text-left text-xs font-semibold bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 cursor-pointer flex items-center shrink-0 snap-start`;
                     btn.id = `weekBtn-${wKey}`;
                     btn.innerHTML = `<i class="fa-solid fa-layer-group text-[11px] mr-2 text-indigo-400"></i>Tuần ${wKey}`;
                     btn.onclick = (e) => { e.stopPropagation(); selectWeek(parseInt(wKey)); };
@@ -899,7 +959,7 @@
                         daysGrid.appendChild(emptyBox);
                     } else {
                         const btn = document.createElement('button');
-                        btn.className = `p-1.5 rounded-xl text-center bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 cursor-pointer flex flex-col items-center justify-center min-h-[48px] transition-all`;
+                        btn.className = `p-1.5 rounded-xl text-center bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 hover:border-slate-700 cursor-pointer flex flex-col items-center justify-center min-h-[48px] transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5`;
                         btn.id = `dayBtn-${dayData.dayNum}`;
                         if (currentScope.year === currentRealYear && currentScope.month === currentRealMonth && dayData.dayNum === currentRealDay) {
                             btn.classList.add('border-amber-500/60', 'bg-amber-950/20', 'ring-1', 'ring-amber-500/30');
@@ -965,6 +1025,7 @@
                 const monthKey = `y${currentScope.year}-m${m}`;
                 document.getElementById('monthlyIncome').value = dbStorage[monthKey]?.rawIncome || '';
                 document.getElementById('monthlyFixedExpense').value = dbStorage[monthKey]?.rawFixedExpense || '';
+                document.getElementById('monthlySavingsGoal').value = dbStorage[monthKey]?.rawSavingsGoal || '';
             }
 
             function saveMonthlyFixedData() {
@@ -972,11 +1033,14 @@
                 if (!dbStorage[monthKey]) dbStorage[monthKey] = {};
                 const rawInc = document.getElementById('monthlyIncome').value;
                 const rawExp = document.getElementById('monthlyFixedExpense').value;
+                const rawSav = document.getElementById('monthlySavingsGoal').value;
 
                 dbStorage[monthKey].rawIncome = rawInc;
                 dbStorage[monthKey].rawFixedExpense = rawExp;
+                dbStorage[monthKey].rawSavingsGoal = rawSav;
                 dbStorage[monthKey].income = parseShortcutValue(rawInc);
                 dbStorage[monthKey].fixedExpense = parseShortcutValue(rawExp);
+                dbStorage[monthKey].savingsGoal = parseShortcutValue(rawSav);
                 localStorage.setItem('student_budget_matrix_firebase', JSON.stringify(dbStorage));
             }
 
@@ -1049,6 +1113,44 @@
                 document.getElementById('statTotalExpense').innerText = `${displayExpense.toLocaleString('vi-VN')} ₫`;
                 document.getElementById('statRemaining').innerText = `${displayRemaining.toLocaleString('vi-VN')} ₫`;
                 document.getElementById('statRemaining').className = displayRemaining >= 0 ? "font-black text-right text-sm text-emerald-400" : "font-black text-right text-sm text-rose-400";
+
+                // UPDATE NEW STATS CARDS
+                const monthDisplayIncome = baseIncome + totalDayIncome;
+                const monthDisplayExpense = baseExpense + totalDayExpense;
+                document.getElementById('cardTotalIncome').innerText = `${monthDisplayIncome.toLocaleString('vi-VN')} ₫`;
+                document.getElementById('cardTotalExpense').innerText = `${monthDisplayExpense.toLocaleString('vi-VN')} ₫`;
+                document.getElementById('cardRemaining').innerText = `${finalMonthRemaining.toLocaleString('vi-VN')} ₫`;
+                document.getElementById('cardRemaining').className = finalMonthRemaining >= 0 ? "text-lg font-black text-blue-400 mt-1 drop-shadow-md" : "text-lg font-black text-rose-400 mt-1 drop-shadow-md";
+
+                // CALCULATE SAVINGS PROGRESS
+                const savingsGoal = dbStorage[monthKey]?.savingsGoal || 0;
+                let savingsProgress = 0;
+                if (savingsGoal > 0) {
+                    savingsProgress = Math.min(100, Math.max(0, (finalMonthRemaining / savingsGoal) * 100));
+                    document.getElementById('savingsPercent').innerText = `${savingsProgress.toFixed(0)}%`;
+                    document.getElementById('savingsProgressBar').style.width = `${savingsProgress}%`;
+                    document.getElementById('savingsProgressBar').className = savingsProgress >= 100 ? "bg-gradient-to-r from-emerald-400 to-teal-400 h-2.5 rounded-full shadow-[0_0_10px_rgba(52,211,153,0.5)] transition-all duration-500" : "bg-gradient-to-r from-indigo-500 to-purple-500 h-2.5 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)] transition-all duration-500";
+                    document.getElementById('savingsPercent').className = savingsProgress >= 100 ? "text-xs font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md ring-1 ring-emerald-500/20" : "text-xs font-black text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-md ring-1 ring-indigo-500/20";
+                } else {
+                    document.getElementById('savingsPercent').innerText = "0%";
+                    document.getElementById('savingsProgressBar').style.width = "0%";
+                    document.getElementById('savingsProgressBar').className = "bg-gradient-to-r from-indigo-500 to-purple-500 h-2.5 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)] transition-all duration-500";
+                    document.getElementById('savingsPercent').className = "text-xs font-black text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-md ring-1 ring-indigo-500/20";
+                }
+
+                // BUDGET WARNING BANNER LOGIC
+                const warningBanner = document.getElementById('budgetWarningBanner');
+                if (finalMonthRemaining < 0) {
+                    warningBanner.classList.remove('hidden');
+                    warningBanner.className = "lg:col-span-12 bg-rose-500/10 border border-rose-500/30 rounded-xl p-3 mb-2 flex items-center gap-3 transition-all";
+                    warningBanner.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-rose-400 text-xl"></i><div><h4 class="text-rose-400 font-bold text-sm">Cảnh báo Ngân Sách Khẩn Cấp!</h4><p class="text-rose-300 text-xs">Bạn đã chi tiêu vượt quá tổng số tiền hiện có. Hãy dừng ngay các khoản chi không cần thiết.</p></div>';
+                } else if (savingsGoal > 0 && finalMonthRemaining < savingsGoal) {
+                    warningBanner.classList.remove('hidden');
+                    warningBanner.className = "lg:col-span-12 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 mb-2 flex items-center gap-3 transition-all";
+                    warningBanner.innerHTML = '<i class="fa-solid fa-bell text-amber-400 text-xl"></i><div><h4 class="text-amber-400 font-bold text-sm">Lưu ý Mục Tiêu Tiết Kiệm!</h4><p class="text-amber-300 text-xs">Số dư dự kiến trong tháng hiện không đạt mục tiêu tiết kiệm. Hãy điều chỉnh lại chi tiêu.</p></div>';
+                } else {
+                    warningBanner.classList.add('hidden');
+                }
 
                 if (currentScope.week) {
                     const w = currentScope.week;
