@@ -813,9 +813,11 @@
                 document.getElementById(`monthBtn-${m}`).classList.add('tab-active');
 
                 document.getElementById('monthInputSection').classList.remove('opacity-30', 'pointer-events-none');
-                document.getElementById('dayInputSection').classList.add('opacity-30', 'pointer-events-none');
-                document.getElementById('dayBadge').innerText = "Chọn một ngày để viết nhật ký";
-                document.getElementById('dayLogs').value = "";
+                document.getElementById('dayInputSection').classList.remove('opacity-30', 'pointer-events-none');
+                document.getElementById('dayBadge').innerText = `Nhật ký: Toàn bộ Tháng ${m}/${currentScope.year}`;
+                document.getElementById('dayBadge').className = 'text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-md border border-blue-500/20 tracking-wide inline-block mb-2';
+                document.getElementById('dayLogs').readOnly = true;
+                document.getElementById('dayLogs').value = getCombinedLogs('month', currentScope.year, m, null);
                 document.getElementById('weekSummaryBox').classList.add('hidden');
                 document.getElementById('timePath').innerText = `${currentScope.year} > Tháng ${m}`;
 
@@ -880,6 +882,12 @@
                 document.getElementById('timePath').innerText = `${currentScope.year} > Tháng ${currentScope.month} > Tuần ${w}`;
                 document.getElementById('weekSummaryBox').classList.remove('hidden');
                 document.getElementById('weekSummaryTitle').innerText = `Tổng kết Tuần ${w}`;
+                
+                document.getElementById('dayInputSection').classList.remove('opacity-30', 'pointer-events-none');
+                document.getElementById('dayBadge').innerText = `Nhật ký: Tuần ${w} - Tháng ${currentScope.month}/${currentScope.year}`;
+                document.getElementById('dayBadge').className = 'text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-md border border-purple-500/20 tracking-wide inline-block mb-2';
+                document.getElementById('dayLogs').readOnly = true;
+                document.getElementById('dayLogs').value = getCombinedLogs('week', currentScope.year, currentScope.month, w);
 
                 const daysGrid = document.getElementById('daysGrid'); daysGrid.innerHTML = '';
                 const weekDaysRow = monthlyWeeksStructure[w] || Array(7).fill(null);
@@ -911,11 +919,45 @@
 
                 document.getElementById('timePath').innerText = `${currentScope.year} > T.${currentScope.month} > Tv.${currentScope.week} > ${dayOfWeekName}, Ngày ${dayNum}`;
                 document.getElementById('dayBadge').innerText = `Nhật ký: ${dayOfWeekName}, Ngày ${dayNum}/${currentScope.month}/${currentScope.year}`;
+                document.getElementById('dayBadge').className = 'text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/20 tracking-wide inline-block mb-2';
                 document.getElementById('dayInputSection').classList.remove('opacity-30', 'pointer-events-none');
 
+                document.getElementById('dayLogs').readOnly = false;
                 const dayStorageKey = `y${currentScope.year}-m${currentScope.month}-d${dayNum}`;
                 document.getElementById('dayLogs').value = dbStorage[dayStorageKey]?.logs ? dbStorage[dayStorageKey].logs : "";
                 recalculateAll();
+            }
+
+            function getCombinedLogs(level, y, m, w) {
+                let gatheredLogs = [];
+                if (level === 'month') {
+                    for (let day = 1; day <= 31; day++) {
+                        const dKey = `y${y}-m${m}-d${day}`;
+                        if (dbStorage[dKey]?.logs && dbStorage[dKey].logs.trim() !== '') {
+                            gatheredLogs.push(`--- Ngày ${day}/${m} ---`);
+                            gatheredLogs.push(dbStorage[dKey].logs.trim());
+                            gatheredLogs.push('');
+                        }
+                    }
+                } else if (level === 'week') {
+                    if (monthlyWeeksStructure[w]) {
+                        monthlyWeeksStructure[w].forEach(dInfo => {
+                            if (dInfo) {
+                                const dKey = `y${y}-m${m}-d${dInfo.dayNum}`;
+                                if (dbStorage[dKey]?.logs && dbStorage[dKey].logs.trim() !== '') {
+                                    gatheredLogs.push(`--- Ngày ${dInfo.dayNum}/${m} ---`);
+                                    gatheredLogs.push(dbStorage[dKey].logs.trim());
+                                    gatheredLogs.push('');
+                                }
+                            }
+                        });
+                    }
+                }
+                
+                if (gatheredLogs.length === 0) {
+                    return `Không có dữ liệu nhật ký nào trong ${level === 'month' ? 'tháng' : 'tuần'} này.`;
+                }
+                return gatheredLogs.join('\n').trim();
             }
 
             function loadMonthlyFixedData(m) {
